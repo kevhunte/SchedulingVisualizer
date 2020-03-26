@@ -25,24 +25,38 @@
     <h4>
       Scheduling Visualizer
     </h4>
-    ------ Input for # of processes. Tell users to select alg from nav. Make active alg a different color ------- <br>
-    Display number of processes and Algorithm here <br>
-    ----- Scheduling Components in v-if to render with choice -----
+    ------ Input for # of processes. Tell users to select alg from nav. ------- <br>
+    Display number of processes and Algorithm here
+    <div id="AlgContainer" class="pt-3">
+      <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" />
+      <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" />
+      <RR v-if="this.Algorithm=='RR'" class="animated fadeIn" />
+      <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" />
+    </div>
   </div>
 </div>
 </template>
 
 <script>
 //import HelloWorld from './components/HelloWorld.vue'
+import FCFS from './components/FCFS.vue'
+import LRJF from './components/LRJF.vue'
+import PQ from './components/PriorityQueue.vue'
+import RR from './components/RoundRobin.vue'
 
 export default {
   name: 'App',
   components: {
     //HelloWorld
+    FCFS,
+    LRJF,
+    RR,
+    PQ
   },
   data() {
     return {
-      Algorithm: null
+      Algorithm: null,
+      processes: []
     }
   },
   methods: {
