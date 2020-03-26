@@ -11,17 +11,17 @@
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
           <b-nav-item-dropdown text="Algorithm">
-            <b-dropdown-item href="#">FCFS</b-dropdown-item>
-            <b-dropdown-item href="#">LRJF</b-dropdown-item>
-            <b-dropdown-item href="#">Round Robin</b-dropdown-item>
-            <b-dropdown-item href="#">Priority Queue</b-dropdown-item>
+            <b-dropdown-item @click="initAlg('FCFS')" href="#" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
+            <b-dropdown-item @click="initAlg('LRJF')" href="#" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
+            <b-dropdown-item @click="initAlg('RR')" href="#" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
+            <b-dropdown-item @click="initAlg('PQ')" href="#" :active="this.Algorithm == 'PQ'">Priority Queue</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
 
       </b-collapse>
     </b-navbar>
   </div>
-  <div id="otherData" class="">
+  <div id="otherData" class="col-md-7 mx-auto">
     <h4>
       Scheduling Visualizer
     </h4>
@@ -42,10 +42,14 @@ export default {
   },
   data() {
     return {
-
+      Algorithm: null
     }
   },
   methods: {
+    initAlg(alg) {
+      this.Algorithm = alg;
+      // do more stuff here
+    }
 
   }
 }
@@ -62,6 +66,14 @@ export default {
 
 #otherData {
     padding-top: 80px;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    // navbar header elements
+    color: #42B983;
+    font-weight: bold;
+    background-color: transparent;
 }
 
 .dropdown-toggle:after {
