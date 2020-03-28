@@ -11,10 +11,10 @@
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
           <b-nav-item-dropdown text="Algorithm">
-            <b-dropdown-item @click="initAlg('FCFS')" href="#" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
-            <b-dropdown-item @click="initAlg('LRJF')" href="#" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
-            <b-dropdown-item @click="initAlg('RR')" href="#" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
-            <b-dropdown-item @click="initAlg('PQ')" href="#" :active="this.Algorithm == 'PQ'">Priority Queue</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('FCFS')" href="#" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('LRJF')" href="#" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('RR')" href="#" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('PQ')" href="#" :active="this.Algorithm == 'PQ'">Priority Queue</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
 
@@ -22,11 +22,24 @@
     </b-navbar>
   </div>
   <div id="otherData" class="col-md-7 mx-auto">
-    <h4>
+    <!--<h4>
       Scheduling Visualizer
-    </h4>
-    ------ Input for # of processes. Tell users to select alg from nav. ------- <br>
-    Display number of processes and Algorithm here
+    </h4>-->
+
+    <div id="processesContainer">
+      <h5>Select a number of processes to simulate:</h5>
+      <b-form-input v-model="numProcesses" type="range" min="1" max="50"></b-form-input>
+      <div v-if="numProcesses > 0">
+        <h6>{{this.numProcesses}}</h6>
+        <b-button pill @click="generateProcesses()" variant="success">Generate</b-button>
+        <b-button pill v-if="this.processes.length > 0" @click="clearProcesses()" variant="danger">Clear</b-button>
+        <h6 v-if="this.processes.length > 0" class="pt-3"> Number of Processes: {{this.processes.length}}</h6>
+        <h6 id="algPicker" v-if="!this.Algorithm && this.processes.length > 0" class="pt-2 animated infinite pulse" style="color: #42B983;">
+          Now select a scheduling algorithm from the navigation bar above
+        </h6>
+      </div>
+    </div>
+
     <div id="AlgContainer" class="pt-3">
       <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" />
       <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" />
@@ -56,13 +69,37 @@ export default {
   data() {
     return {
       Algorithm: null,
-      processes: []
+      processes: [],
+      numProcesses: 0
     }
   },
   methods: {
-    initAlg(alg) {
+    setAlg(alg) {
       this.Algorithm = alg;
       // do more stuff here
+    },
+    generateProcesses() {
+      if (this.numProcesses < 1) {
+        return;
+      }
+      console.log('generating...')
+      for (let i = 0; i < this.numProcesses; i++) {
+        // priority from 1 to numProcesses
+        let p = {
+          "id": i,
+          "priority": Math.floor((Math.random() * (this.numProcesses - 1)) + 1),
+          "burstTime": Math.floor((Math.random() * 14) + 1)
+        }
+        this.processes.push(p);
+      }
+      console.log(this.processes);
+    },
+    clearProcesses() {
+      console.log('clearing...');
+      this.processes = []; // allocates new array. Won't break ref for components
+      this.Algorithm = null;
+      this.numProcesses = 0;
+      //console.log(this.processes);
     }
 
   }
@@ -80,6 +117,10 @@ export default {
 
 #otherData {
     padding-top: 80px;
+}
+
+#algPicker {
+    animation-duration: 2s;
 }
 
 .dropdown-item.active,
