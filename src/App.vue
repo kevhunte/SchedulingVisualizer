@@ -28,14 +28,14 @@
 
     <div id="processesContainer">
       <h5>Select a number of processes to simulate:</h5>
-      <b-form-input v-model="numProcesses" type="range" min="1" max="50"></b-form-input>
+      <b-form-input v-model="numProcesses" type="range" min="1" max="50" class="pl-4 pr-4"></b-form-input>
       <div v-if="numProcesses > 0">
         <h6>{{this.numProcesses}}</h6>
         <b-button pill @click="generateProcesses()" variant="success">Generate</b-button>
         <b-button pill v-if="this.processes.length > 0" @click="clearProcesses()" variant="danger">Clear</b-button>
         <h6 v-if="this.processes.length > 0" class="pt-3"> Number of Processes: {{this.processes.length}}</h6>
         <h6 id="algPicker" v-if="!this.Algorithm && this.processes.length > 0" class="pt-2 animated infinite pulse" style="color: #42B983;">
-          Now select a scheduling algorithm from the navigation bar above
+          Now select a scheduling algorithm from the header tab above
         </h6>
       </div>
     </div>

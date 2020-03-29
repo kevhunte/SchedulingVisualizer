@@ -15,7 +15,7 @@
     <h6>
       Remaining Processes: {{this.localCopy.length}}
     </h6>
-    <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1">
+    <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
       <h6>
         <b><i>Executing</i></b>
       </h6>
@@ -26,17 +26,17 @@
         priority: {{this.currProcess.priority}}
       </h6>
       <h6>
-        burst time: {{this.currProcess.burstTime}}
+        burst time: {{this.currProcess.burstTime}}s
       </h6>
     </div>
   </div>
 
-  <div id="calcContainer" v-if="!this.localCopy.length" class="p-2 animated fadeIn delay-1s">
+  <div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
     <h5>
-      Throughput <br>
-      Utilization <br>
-      Avg wait time <br>
-      Avg turnaround time <br>
+      Throughput: <br>
+      Utilization: <br>
+      Avg Wait Time: <br>
+      Avg Turnaround Time: <br>
     </h5>
   </div>
 
