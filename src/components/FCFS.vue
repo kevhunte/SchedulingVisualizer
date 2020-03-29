@@ -10,22 +10,35 @@
     The below queue shows the amount of processes waiting to execute.
   </h6>
 
-  <div id="simContainer" v-if="this.localCopy.length" class="p-4 animated fadeIn delay-4s">
+  <div id="simContainer" v-if="this.localCopy" class="p-4 animated fadeIn delay-4s">
     <b-progress :value="this.localCopy.length" :max="initLength"></b-progress>
     <h6>
       Remaining Processes: {{this.localCopy.length}}
     </h6>
-    {{this.currProcess}}
+    <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1">
+      <h6>
+        <b><i>Executing</i></b>
+      </h6>
+      <h6>
+        pid: {{this.currProcess.id}}
+      </h6>
+      <h6>
+        priority: {{this.currProcess.priority}}
+      </h6>
+      <h6>
+        burst time: {{this.currProcess.burstTime}}
+      </h6>
+    </div>
   </div>
-  <h5>
-    -- Show formulas here. Compute and send in dispatch to parent? Or show locally (decide later)---<br>
-    Throughput <br>
-    Utilization <br>
-    Avg wait time <br>
-    Avg turnaround time <br>
 
-
-  </h5>
+  <div id="calcContainer" v-if="!this.localCopy.length" class="p-2 animated fadeIn delay-1s">
+    <h5>
+      Throughput <br>
+      Utilization <br>
+      Avg wait time <br>
+      Avg turnaround time <br>
+    </h5>
+  </div>
 
 </div>
 </template>

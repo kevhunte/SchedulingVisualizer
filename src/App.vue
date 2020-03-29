@@ -10,7 +10,7 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
-          <b-nav-item-dropdown text="Algorithm">
+          <b-nav-item-dropdown text="Algorithm" :disabled="this.processes.length <= 0">
             <b-dropdown-item @click="setAlg('FCFS')" href="#" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
             <b-dropdown-item @click="setAlg('LRJF')" href="#" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
             <b-dropdown-item @click="setAlg('RR')" href="#" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
