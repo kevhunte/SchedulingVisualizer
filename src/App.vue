@@ -134,4 +134,8 @@ export default {
 .dropdown-toggle:after {
     content: none;
 }
+
+.progress-bar {
+    background-color: #42B983;
+}
 </style>

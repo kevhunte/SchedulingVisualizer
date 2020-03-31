@@ -15,6 +15,9 @@
     <h6>
       Remaining Processes: {{this.localCopy.length}}
     </h6>
+    <!--Toggleable buttons to pause and resume-->
+    <b-button v-if="!this.isPaused && this.currProcess" pill @click="stopTimer()" variant="info">Pause</b-button>
+    <b-button v-else-if="this.isPaused && this.currProcess" pill @click="startTimer()" variant="info">Resume</b-button>
     <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
       <h6>
         <b><i>Executing</i></b>
@@ -69,7 +72,9 @@ export default {
       interval: 2000,
       initLength: this.proc.length,
       currProcess: null,
-      localCopy: null
+      localCopy: null,
+      t: null,
+      isPaused: false
     }
   },
   watch: {},
@@ -85,20 +90,19 @@ export default {
     },
     startTimer() { // start animation train
       console.log("starting...");
-      setInterval(() => {
+      this.t = setInterval(() => {
         this.execute()
         // keep track of total time needed. Inc clock ticks
       }, this.interval);
+      this.isPaused = false;
     },
     stopTimer() {
-      clearInterval();
+      clearInterval(this.t); // see if this works. Or set to null
+      this.isPaused = true;
     }
   }
 }
 </script>
 
 <style lang="scss">
-.progress-bar {
-    background-color: #42B983;
-}
 </style>
