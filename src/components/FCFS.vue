@@ -36,10 +36,22 @@
 
   <div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
     <h5>
-      Throughput: {{this.throughput}}<br>
-      Utilization: {{this.utilization}}<br>
-      Avg Wait Time: {{this.avgWaitTime}}s<br>
-      Avg Turnaround Time: {{this.turnaround}}s<br>
+      <div class="p-1">
+        Throughput: {{this.throughput}}
+        <b-icon-question v-b-tooltip.click title="numProcesses / run-time"></b-icon-question>
+      </div>
+      <div class="p-1">
+        Utilization: {{this.utilization}}
+        <b-icon-question v-b-tooltip.click title="1 - (avg wait time ^ numProcesses)"></b-icon-question>
+      </div>
+      <div class="p-1">
+        Avg Wait Time: {{this.avgWaitTime}}s
+        <b-icon-question v-b-tooltip.click title="sum(Kth process start time) / numProcesses"></b-icon-question>
+      </div>
+      <div class="p-1">
+        Avg Turnaround Time: {{this.turnaround}}s
+        <b-icon-question v-b-tooltip.click title="sum(Kth process execution time) / numProcesses"></b-icon-question>
+      </div>
     </h5>
   </div>
 
@@ -47,6 +59,10 @@
 </template>
 
 <script>
+import {
+  BIconQuestion
+} from 'bootstrap-vue/src/icons'
+
 export default {
   name: 'FCFS',
   props: {
@@ -54,6 +70,9 @@ export default {
       type: Array,
       required: true
     }
+  },
+  components: {
+    BIconQuestion
   },
   created() {
     if (this.proc) {
