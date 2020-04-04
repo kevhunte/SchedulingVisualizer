@@ -38,8 +38,8 @@
     <h5>
       Throughput: {{this.throughput}}<br>
       Utilization: {{this.utilization}}<br>
-      Avg Wait Time: <br>
-      Avg Turnaround Time: <br>
+      Avg Wait Time: {{this.avgWaitTime}}s<br>
+      Avg Turnaround Time: {{this.turnaround}}s<br>
     </h5>
   </div>
 
@@ -81,7 +81,7 @@ export default {
   },
   computed: {
     utilization() {
-      // calc the utilization: 1 - waitTime ^ numProcesses
+      // calc the utilization: 1 - avgWaitTime ^ numProcesses
       // skip first process: if localCopy.length < initLength and > 0
       let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
       //console.log('utilization: ', val);
@@ -97,10 +97,25 @@ export default {
       } else {
         return 0;
       }
-
+    },
+    avgWaitTime() {
+      let val = (this.waitTime / this.initLength).toPrecision(2);
+      return val;
+    },
+    turnaround() {
+      // same as runTime / numProcesses since they are all completed in one go
+      //console.log('runTime:', this.runTime, 'waitTime:', this.waitTime);
+      let val = (this.runTime / this.initLength).toPrecision(2);
+      return val;
     }
   },
-  watch: {},
+  watch: {
+    'this.localCopy': function(val) {
+      if (!val) {
+        clearInterval(); // breaks loop when empty
+      }
+    }
+  },
   methods: {
     execute() {
       if (!this.localCopy) { // check if empty
@@ -110,8 +125,9 @@ export default {
       //console.log('executing...');
       this.currProcess = this.localCopy.shift(); // dequeque process
       if (this.currProcess) { // do math for other variables
-        this.runTime += this.currProcess.burstTime; // executes for full time needed
-        this.waitTime += this.localCopy.length < this.initLength ? this.currProcess.burstTime : 0;
+        // executes for full time needed
+        this.runTime += this.currProcess.burstTime;
+        this.waitTime += this.localCopy.length < this.initLength - 1 ? this.currProcess.burstTime : 0;
       }
 
     },
