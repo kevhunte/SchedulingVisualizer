@@ -42,7 +42,7 @@
 
     <div id="AlgContainer" class="pt-3">
       <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
-      <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" />
+      <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
       <RR v-if="this.Algorithm=='RR'" class="animated fadeIn" />
       <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
     </div>
