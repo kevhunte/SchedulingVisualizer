@@ -36,8 +36,8 @@
 
   <div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
     <h5>
-      Throughput: <br>
-      Utilization: <br>
+      Throughput: {{this.throughput}}<br>
+      Utilization: {{this.utilization}}<br>
       Avg Wait Time: <br>
       Avg Turnaround Time: <br>
     </h5>
@@ -74,7 +74,30 @@ export default {
       currProcess: null,
       localCopy: null,
       t: null,
-      isPaused: false
+      isPaused: false,
+      runTime: 0,
+      waitTime: 0
+    }
+  },
+  computed: {
+    utilization() {
+      // calc the utilization: 1 - waitTime ^ numProcesses
+      // skip first process: if localCopy.length < initLength and > 0
+      let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
+      //console.log('utilization: ', val);
+      return val;
+    },
+    throughput() {
+      // calc the throughput: numProcesses / runTime
+      //console.log('computing throughput', this.runTime);
+      if (this.runTime > 0) {
+        let val = +(this.initLength / this.runTime).toPrecision(2);
+        //console.log('throughput: ', val);
+        return val;
+      } else {
+        return 0;
+      }
+
     }
   },
   watch: {},
@@ -86,7 +109,11 @@ export default {
       }
       //console.log('executing...');
       this.currProcess = this.localCopy.shift(); // dequeque process
-      // do math for other variables
+      if (this.currProcess) { // do math for other variables
+        this.runTime += this.currProcess.burstTime; // executes for full time needed
+        this.waitTime += this.localCopy.length < this.initLength ? this.currProcess.burstTime : 0;
+      }
+
     },
     startTimer() { // start animation train
       console.log("starting...");
