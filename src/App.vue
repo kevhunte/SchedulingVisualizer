@@ -31,21 +31,37 @@
       <b-form-input v-model="numProcesses" type="range" min="1" max="50" class="pl-4 pr-4"></b-form-input>
       <div v-if="numProcesses > 0">
         <h6>{{this.numProcesses}}</h6>
-        <b-button pill @click="generateProcesses()" variant="success">Generate</b-button>
-        <b-button pill v-if="this.processes.length > 0" @click="clearProcesses()" variant="danger">Clear</b-button>
+        <b-button pill v-if="this.processes.length == 0" @click="generateProcesses()" variant="success">Generate Processes</b-button>
+        <b-button pill v-else-if="this.processes.length > 0" @click="clearProcesses()" variant="danger">Reset</b-button>
         <h6 v-if="this.processes.length > 0" class="pt-3"> Number of Processes: {{this.processes.length}}</h6>
+
+        <h6 v-if="this.quant > 0" class="pt-3"> Time quantum is set to: {{this.quant}}</h6>
+
         <h6 id="algPicker" v-if="!this.Algorithm && this.processes.length > 0" class="pt-2 animated infinite pulse" style="color: #42B983;">
           Now select a scheduling algorithm from the header tab above
         </h6>
+        <!--input for time quantum if necessary-->
+        <div v-if="this.Algorithm=='RR' && this.quant <= 0" class="p-3 animated fadeIn">
+          <h6>
+            Select a time quantum value below. This determines how long a process will execute for.
+          </h6>
+          <b-input-group size="md">
+            <b-form-input v-model="quantIn" type="number" min="1" max="15" placeholder="Select a number between 1 and 15:"></b-form-input>
+            <b-input-group-append>
+              <b-button @click="setQuant" @keyup.enter="setQuant" variant="info">Accept</b-button>
+            </b-input-group-append>
+          </b-input-group>
+        </div>
       </div>
     </div>
 
     <div id="AlgContainer" class="pt-3">
       <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
       <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
-      <RR v-if="this.Algorithm=='RR'" class="animated fadeIn" />
+      <RR v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.processes" :quantum="this.quant" />
       <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
     </div>
+    <!--Comparison container for other algorithms-->
   </div>
 </div>
 </template>
@@ -70,10 +86,31 @@ export default {
     return {
       Algorithm: null,
       processes: [],
-      numProcesses: 0
+      numProcesses: 0,
+      quantIn: '',
+      quant: 0
+    }
+  },
+  watch: {
+    'Algorithm': function(val) {
+      if (!val.includes('RR')) { // clear element when not Round Robin
+        this.quantIn = '';
+        this.quant = 0;
+      }
     }
   },
   methods: {
+    setQuant() {
+      // explicitly set quant val by call
+      console.log('gotten:', this.quantIn);
+      let val = parseInt(this.quantIn.replace(/[^0-9]+/g, "")); // numbers only
+      val = val > 15 ? 15 : val; // cap at 15
+      //console.log('new val', val);
+      console.log('After cleansing:', val);
+      if (typeof val == 'number') {
+        this.quant = val;
+      }
+    },
     setAlg(alg) {
       this.Algorithm = alg;
       // do more stuff here
@@ -99,6 +136,8 @@ export default {
       this.processes = []; // allocates new array. Won't break ref for components
       this.Algorithm = null;
       this.numProcesses = 0;
+      this.quantIn = '';
+      this.quant = 0;
       //console.log(this.processes);
     }
 
