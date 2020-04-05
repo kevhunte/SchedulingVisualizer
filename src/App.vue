@@ -55,13 +55,38 @@
       </div>
     </div>
 
-    <div id="AlgContainer" class="pt-3">
+    <div id="AlgContainer" class="p-3">
       <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
       <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
       <RR v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.RRProcesses" :quantum="this.quant" />
       <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
     </div>
     <!--Comparison container for other algorithms-->
+    <div id="ComparisonContainer" v-if="this.$store.getters.results[0] || this.$store.getters.results[1] || this.$store.getters.results[2] || this.$store.getters.results[3]" class="col-md-7 mx-auto">
+      <h6>
+        Compared to previous runs:
+      </h6>
+      <b-card v-if="this.$store.getters.results[0]" title="First Come First Serve" style="max-width: 20rem;" class="mb-2">
+        <b-card-text>
+          {{this.$store.getters.results[0]}}
+        </b-card-text>
+      </b-card>
+      <b-card v-if="this.$store.getters.results[1]" title="Longest Remaining Job First" style="max-width: 20rem;" class="mb-2">
+        <b-card-text>
+          {{this.$store.getters.results[1]}}
+        </b-card-text>
+      </b-card>
+      <b-card v-if="this.$store.getters.results[2]" title="Round Robin" style="max-width: 20rem;" class="mb-2">
+        <b-card-text>
+          {{this.$store.getters.results[2]}}
+        </b-card-text>
+      </b-card>
+      <b-card v-if="this.$store.getters.results[3]" title="Priority Queue" style="max-width: 20rem;" class="mb-2">
+        <b-card-text>
+          {{this.$store.getters.results[3]}}
+        </b-card-text>
+      </b-card>
+    </div>
   </div>
 </div>
 </template>
@@ -89,7 +114,8 @@ export default {
       RRProcesses: [],
       numProcesses: 0,
       quantIn: '',
-      quant: 0
+      quant: 0,
+      results: [null, null, null, null]
     }
   },
   watch: {
@@ -121,7 +147,7 @@ export default {
       if (this.numProcesses < 1) {
         return;
       }
-      console.log('generating...')
+      //console.log('generating...')
       for (let i = 0; i < this.numProcesses; i++) {
         // priority from 1 to numProcesses
         let p = {
@@ -136,19 +162,19 @@ export default {
         this.processes.push(p);
         this.RRProcesses.push(p2);
       }
-      console.log(this.processes);
+      //console.log(this.processes);
     },
     clearProcesses() {
-      console.log('clearing...');
+      //console.log('clearing...');
       this.processes = []; // allocates new array. Won't break ref for components
       this.RRProcesses = [];
       this.Algorithm = null;
       this.numProcesses = 0;
       this.quantIn = '';
       this.quant = 0;
+      this.$store.dispatch('resetResults');
       //console.log(this.processes);
     }
-
   }
 }
 </script>

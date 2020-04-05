@@ -100,7 +100,8 @@ export default {
       t: null,
       isPaused: false,
       runTime: 0,
-      waitTime: 0
+      waitTime: 0,
+      result: {}
     }
   },
   computed: {
@@ -109,6 +110,7 @@ export default {
       // skip first process: if localCopy.length < initLength and > 0
       let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
       //console.log('utilization: ', val);
+      this.result.utilization = val;
       return val;
     },
     throughput() {
@@ -117,6 +119,7 @@ export default {
       if (this.runTime > 0) {
         let val = +(this.initLength / this.runTime).toPrecision(2);
         //console.log('throughput: ', val);
+        this.result.throughput = val;
         return val;
       } else {
         return 0;
@@ -124,28 +127,19 @@ export default {
     },
     avgWaitTime() {
       let val = (this.waitTime / this.initLength).toPrecision(2);
+      this.result.avgWaitTime = val;
       return val;
     },
     turnaround() {
       // same as runTime / numProcesses since they are all completed in one go
       //console.log('runTime:', this.runTime, 'waitTime:', this.waitTime);
       let val = (this.runTime / this.initLength).toPrecision(2);
+      this.result.turnaround = val;
       return val;
-    }
-  },
-  watch: {
-    'this.localCopy': function(val) {
-      if (!val) {
-        clearInterval(); // breaks loop when empty
-      }
     }
   },
   methods: {
     execute() {
-      if (!this.localCopy) { // check if empty
-        clearInterval(); // breaks loop when empty
-        return;
-      }
       //console.log('executing...');
       this.currProcess = this.localCopy.shift(); // dequeque process
       if (this.currProcess) { // do math for other variables
@@ -158,6 +152,10 @@ export default {
     startTimer() { // start animation train
       console.log("starting...");
       this.t = setInterval(() => {
+        if (!this.localCopy.length) { // stops itself on completion and sends results
+          clearInterval(this.t);
+          this.sendtoParent();
+        }
         this.execute()
         // keep track of total time needed. Inc clock ticks
       }, this.interval);
@@ -166,6 +164,14 @@ export default {
     stopTimer() {
       clearInterval(this.t); // see if this works. Or set to null
       this.isPaused = true;
+    },
+    sendtoParent(event) {
+      let data = {
+        alg: 'LRJF',
+        payload: this.result
+      };
+      this.$store.dispatch('passResults', data); // sends to parent
+      //console.log('sending:', data, this.$store);
     }
   }
 }
