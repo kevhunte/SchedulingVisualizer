@@ -35,7 +35,7 @@
         <b-button pill v-else-if="this.processes.length > 0" @click="clearProcesses()" variant="danger">Reset</b-button>
         <h6 v-if="this.processes.length > 0" class="pt-3"> Number of Processes: {{this.processes.length}}</h6>
 
-        <h6 v-if="this.quant > 0" class="pt-3"> Time quantum is set to: {{this.quant}}</h6>
+        <h6 v-if="this.quant > 0" class="pt-3"> Time quantum is set to: {{this.quant}}s</h6>
 
         <h6 id="algPicker" v-if="!this.Algorithm && this.processes.length > 0" class="pt-2 animated infinite pulse" style="color: #42B983;">
           Now select a scheduling algorithm from the header tab above
@@ -58,7 +58,7 @@
     <div id="AlgContainer" class="pt-3">
       <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
       <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
-      <RR v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.processes" :quantum="this.quant" />
+      <RR v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.RRProcesses" :quantum="this.quant" />
       <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
     </div>
     <!--Comparison container for other algorithms-->
@@ -86,6 +86,7 @@ export default {
     return {
       Algorithm: null,
       processes: [],
+      RRProcesses: [],
       numProcesses: 0,
       quantIn: '',
       quant: 0
@@ -93,21 +94,22 @@ export default {
   },
   watch: {
     'Algorithm': function(val) {
-      if (!val.includes('RR')) { // clear element when not Round Robin
-        this.quantIn = '';
-        this.quant = 0;
+      if (val) {
+        if (!val.includes('RR')) { // clear element when not Round Robin
+          this.quantIn = '';
+          this.quant = 0;
+        }
       }
     }
   },
   methods: {
     setQuant() {
-      // explicitly set quant val by call
-      console.log('gotten:', this.quantIn);
+      //console.log('gotten:', this.quantIn);
       let val = parseInt(this.quantIn.replace(/[^0-9]+/g, "")); // numbers only
-      val = val > 15 ? 15 : val; // cap at 15
-      //console.log('new val', val);
-      console.log('After cleansing:', val);
+      //console.log('After cleansing:', val);
       if (typeof val == 'number') {
+        val = val > 15 ? 15 : val; // cap at 15
+        val = val < 1 ? 1 : val; // cap between 1 and 15
         this.quant = val;
       }
     },
@@ -125,15 +127,21 @@ export default {
         let p = {
           "id": i,
           "priority": Math.floor((Math.random() * (this.numProcesses - 1)) + 1),
-          "burstTime": Math.floor((Math.random() * 14) + 1)
+          "burstTime": Math.floor((Math.random() * (15 - 1)) + 1),
+          "timeUsed": 0
         }
+        let p2 = { // two copies needed so RR doesn't mutate p for other algs
+          ...p
+        };
         this.processes.push(p);
+        this.RRProcesses.push(p2);
       }
       console.log(this.processes);
     },
     clearProcesses() {
       console.log('clearing...');
       this.processes = []; // allocates new array. Won't break ref for components
+      this.RRProcesses = [];
       this.Algorithm = null;
       this.numProcesses = 0;
       this.quantIn = '';

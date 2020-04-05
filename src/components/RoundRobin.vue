@@ -31,7 +31,7 @@
         priority: {{this.currProcess.priority}}
       </h6>
       <h6>
-        burst time: {{this.currProcess.burstTime}}s
+        remaining burst time: {{this.currProcess.burstTime}}s
       </h6>
     </div>
   </div>
@@ -81,7 +81,7 @@ export default {
     BIconQuestion
   },
   created() {
-    if (this.proc) {
+    if (this.proc) { // find a way to make unique copy of values
       this.localCopy = this.proc.slice();
     }
   },
@@ -101,7 +101,8 @@ export default {
       t: null,
       isPaused: false,
       runTime: 0,
-      waitTime: 0
+      waitTime: 0,
+      summedTimeUsed: 0
     }
   },
   computed: {
@@ -148,11 +149,36 @@ export default {
         return;
       }
       //console.log('executing...');
+      let remainingTime = 0;
       this.currProcess = this.localCopy.shift(); // dequeque process
       if (this.currProcess) { // do math for other variables
-        // executes for full time needed
-        this.runTime += this.currProcess.burstTime;
-        this.waitTime += this.localCopy.length < this.initLength - 1 ? this.currProcess.burstTime : 0;
+        if (this.quantum > this.currProcess.burstTime) {
+          remainingTime = this.quantum - this.currProcess.burstTime;
+        }
+        //remaining burst time after execution
+        this.currProcess.burstTime = this.currProcess.burstTime - this.quantum > 0 ? this.currProcess.burstTime - this.quantum : 0;
+        // timeUsed in CPU.
+        let currTimeUsed = this.quantum - remainingTime;
+        this.currProcess.timeUsed += currTimeUsed;
+
+        //Propogate this timeUsed to all threads turnaround time that have already started
+        this.localCopy.forEach((item, i) => {
+          if (item.timeUsed != 0) {
+            item.timeUsed += currTimeUsed;
+          }
+        });
+
+
+        // add to total runtime / waitTime clock
+        this.runTime += currTimeUsed;
+        this.waitTime += this.localCopy.length < this.initLength - 1 ? currTimeUsed : 0;
+
+        if (this.currProcess.burstTime > 0) { // if burst time is greater than 0 back in queue
+          this.localCopy.push(this.currProcess);
+        } else { // store process total timeUsed before it is tossed
+          this.summedTimeUsed += this.currProcess.timeUsed;
+        }
+        //console.log('pid:', this.currProcess.id, 'timeUsed:', currTimeUsed, 'remaining time needed:', this.currProcess.burstTime);
       }
 
     },
