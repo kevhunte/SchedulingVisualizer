@@ -62,30 +62,13 @@
       <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
     </div>
     <!--Comparison container for other algorithms-->
-    <div id="ComparisonContainer" v-if="this.$store.getters.results[0] || this.$store.getters.results[1] || this.$store.getters.results[2] || this.$store.getters.results[3]" class="col-md-7 mx-auto">
+    <div id="ComparisonContainer" v-if="this.$store.getters.results.length" class="pb-5">
       <h6>
-        Compared to previous runs:
+        Results:
       </h6>
-      <b-card v-if="this.$store.getters.results[0]" title="First Come First Serve" style="max-width: 20rem;" class="mb-2">
-        <b-card-text>
-          {{this.$store.getters.results[0]}}
-        </b-card-text>
-      </b-card>
-      <b-card v-if="this.$store.getters.results[1]" title="Longest Remaining Job First" style="max-width: 20rem;" class="mb-2">
-        <b-card-text>
-          {{this.$store.getters.results[1]}}
-        </b-card-text>
-      </b-card>
-      <b-card v-if="this.$store.getters.results[2]" title="Round Robin" style="max-width: 20rem;" class="mb-2">
-        <b-card-text>
-          {{this.$store.getters.results[2]}}
-        </b-card-text>
-      </b-card>
-      <b-card v-if="this.$store.getters.results[3]" title="Priority Queue" style="max-width: 20rem;" class="mb-2">
-        <b-card-text>
-          {{this.$store.getters.results[3]}}
-        </b-card-text>
-      </b-card>
+      <!--Load into a table to show the comparisons-->
+      <b-table striped hover :fields="fields" :items="this.$store.getters.results || null">
+      </b-table>
     </div>
   </div>
 </div>
@@ -115,7 +98,7 @@ export default {
       numProcesses: 0,
       quantIn: '',
       quant: 0,
-      results: [null, null, null, null]
+      fields: ['Algorithm', 'throughput', 'utilization', 'avgWaitTime', 'turnaround'] // for table
     }
   },
   watch: {
@@ -172,7 +155,7 @@ export default {
       this.numProcesses = 0;
       this.quantIn = '';
       this.quant = 0;
-      this.$store.dispatch('resetResults');
+      this.$store.dispatch('resetResults'); // clear table
       //console.log(this.processes);
     }
   }

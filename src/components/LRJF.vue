@@ -101,7 +101,10 @@ export default {
       isPaused: false,
       runTime: 0,
       waitTime: 0,
-      result: {}
+      result: {
+        id: 2,
+        Algorithm: 'LRJF'
+      }
     }
   },
   computed: {

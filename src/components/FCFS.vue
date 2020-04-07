@@ -96,7 +96,10 @@ export default {
       isPaused: false,
       runTime: 0,
       waitTime: 0,
-      result: {}
+      result: {
+        id: 1,
+        Algorithm: 'FCFS'
+      }
     }
   },
   computed: {

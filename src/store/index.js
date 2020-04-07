@@ -5,25 +5,28 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    results: [null, null, null, null],
+    results: [],
   },
   mutations: {
     storeResults(state, val){
       //state.results = value;
+      // dynamically grow array
       console.log('received:', val);
-      if (val.alg == 'FCFS') {
-        state.results[0] = val.payload;
-      } else if (val.alg == 'LRJF') {
-        state.results[1] = val.payload;
-      } else if (val.alg == 'RR') {
-        state.results[2] = val.payload;
-      } else if (val.alg == 'PQ') {
-        state.results[3] = val.payload;
+      if(!state.results){ // always grow if empty
+        state.results.push(val.payload);
+        state.results.sort((a,b) => a.id > b.id ? 1 : -1);
       }
+      else{ // check if less than 4. If not, all simulations have been run already
+        if(state.results.length < 4){
+          state.results.push(val.payload);
+          state.results.sort((a,b) => a.id > b.id ? 1 : -1);
+        }
+      }
+
     },
     clearResults(state){
       console.log('resetting');
-      state.results = [null, null, null, null];
+      state.results = [];
     }
   },
   actions: {

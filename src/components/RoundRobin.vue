@@ -103,7 +103,10 @@ export default {
       runTime: 0,
       waitTime: 0,
       summedTimeUsed: 0,
-      result: {}
+      result: {
+        id: 3,
+        Algorithm: 'RR'
+      }
     }
   },
   computed: {
