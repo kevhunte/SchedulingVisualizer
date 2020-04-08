@@ -18,6 +18,11 @@
     <!--Toggleable buttons to pause and resume-->
     <b-button v-if="!this.isPaused && this.currProcess" pill @click="stopTimer()" variant="info">Pause</b-button>
     <b-button v-else-if="this.isPaused && this.currProcess" pill @click="startTimer()" variant="info">Resume</b-button>
+
+    <span class="">
+      <b-icon-arrow-right @click="speedUpTimer" v-if="this.localCopy.length > 3 && this.localCopy.length < this.initLength - 3" font-scale="1.5" v-b-tooltip.hover title="speed up"></b-icon-arrow-right>
+    </span>
+
     <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
       <h6>
         <b><i>Executing</i></b>
@@ -60,7 +65,7 @@
 
 <script>
 import {
-  BIconQuestion
+  BIconArrowRight
 } from 'bootstrap-vue/src/icons'
 
 export default {
@@ -72,7 +77,7 @@ export default {
     }
   },
   components: {
-    BIconQuestion
+    BIconArrowRight
   },
   created() {
     if (this.proc) {
@@ -99,43 +104,10 @@ export default {
       result: {
         id: 1,
         Algorithm: 'FCFS'
-      }
+      },
+      speedUp: false
     }
   },
-  /*computed: {
-    utilization() {
-      // calc the utilization: 1 - avgWaitTime ^ numProcesses
-      // skip first process: if localCopy.length < initLength and > 0
-      let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
-      //console.log('utilization: ', val);
-      this.result.utilization = val;
-      return val;
-    },
-    throughput() {
-      // calc the throughput: numProcesses / runTime
-      //console.log('computing throughput', this.runTime);
-      if (this.runTime > 0) {
-        let val = +(this.initLength / this.runTime).toPrecision(2);
-        //console.log('throughput: ', val);
-        this.result.throughput = val;
-        return val;
-      } else {
-        return 0;
-      }
-    },
-    avgWaitTime() {
-      let val = (this.waitTime / this.initLength).toPrecision(2);
-      this.result.avgWaitTime = val;
-      return val;
-    },
-    turnaround() {
-      // same as runTime / numProcesses since they are all completed in one go
-      //console.log('runTime:', this.runTime, 'waitTime:', this.waitTime);
-      let val = (this.runTime / this.initLength).toPrecision(2);
-      this.result.turnaround = val;
-      return val;
-    }
-  },*/
   methods: {
     execute() {
       //console.log('executing...');
@@ -162,6 +134,14 @@ export default {
     stopTimer() {
       clearInterval(this.t); // see if this works. Or set to null
       this.isPaused = true;
+    },
+    speedUpTimer() {
+      if (!this.speedUp) {
+        clearInterval(this.t);
+        this.interval = 500; // 4x speed
+        this.startTimer();
+      }
+      this.speedUp = true;
     },
     sendtoParent(event) {
       // populates result

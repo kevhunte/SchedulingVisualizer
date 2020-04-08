@@ -18,6 +18,11 @@
     <!--Toggleable buttons to pause and resume-->
     <b-button v-if="!this.isPaused && this.currProcess" pill @click="stopTimer()" variant="info">Pause</b-button>
     <b-button v-else-if="this.isPaused && this.currProcess" pill @click="startTimer()" variant="info">Resume</b-button>
+
+    <span class="">
+      <b-icon-arrow-right @click="speedUpTimer" v-if="this.localCopy.length > 3 && this.localCopy.length < this.initLength - 3" font-scale="1.5" v-b-tooltip.hover title="speed up"></b-icon-arrow-right>
+    </span>
+
     <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
       <h6>
         <b><i>Executing</i></b>
@@ -60,7 +65,7 @@
 
 <script>
 import {
-  BIconQuestion
+  BIconArrowRight
 } from 'bootstrap-vue/src/icons'
 
 export default {
@@ -72,7 +77,7 @@ export default {
     }
   },
   components: {
-    BIconQuestion
+    BIconArrowRight
   },
   created() {
     if (this.proc) {
@@ -104,7 +109,8 @@ export default {
       result: {
         id: 2,
         Algorithm: 'LRJF'
-      }
+      },
+      speedUp: false
     }
   },
   methods: {
@@ -133,6 +139,14 @@ export default {
     stopTimer() {
       clearInterval(this.t); // see if this works. Or set to null
       this.isPaused = true;
+    },
+    speedUpTimer() {
+      if (!this.speedUp) {
+        clearInterval(this.t);
+        this.interval = 500; // 4x speed
+        this.startTimer();
+      }
+      this.speedUp = true;
     },
     sendtoParent(event) {
       this.utilization();
