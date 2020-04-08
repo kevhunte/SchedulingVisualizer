@@ -118,6 +118,7 @@ export default {
   methods: {
     execute() {
       //console.log('executing...');
+      this.runTime += 1; // simulate dispatch latency
       let remainingTime = 0;
       this.currProcess = this.localCopy.shift(); // dequeque process
       if (this.currProcess) { // do math for other variables
