@@ -36,7 +36,7 @@
     </div>
   </div>
 
-  <div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
+  <!--<div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
     <h5>
       <div class="p-1">
         Throughput: {{this.throughput}}
@@ -55,7 +55,7 @@
         <b-icon-question v-b-tooltip.click title="sum(Kth process execution time) / numProcesses"></b-icon-question>
       </div>
     </h5>
-  </div>
+  </div>-->
 
 </div>
 </template>
@@ -107,40 +107,6 @@ export default {
         id: 3,
         Algorithm: 'RR'
       }
-    }
-  },
-  computed: {
-    utilization() {
-      // calc the utilization: 1 - avgWaitTime ^ numProcesses
-      // skip first process: if localCopy.length < initLength and > 0
-      let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
-      //console.log('utilization: ', val);
-      this.result.utilization = val;
-      return val;
-    },
-    throughput() {
-      // calc the throughput: numProcesses / runTime
-      //console.log('computing throughput', this.runTime);
-      if (this.runTime > 0) {
-        let val = +(this.initLength / this.runTime).toPrecision(2);
-        //console.log('throughput: ', val);
-        this.result.throughput = val;
-        return val;
-      } else {
-        return 0;
-      }
-    },
-    avgWaitTime() {
-      let val = (this.waitTime / this.initLength).toPrecision(2);
-      this.result.avgWaitTime = val;
-      return val;
-    },
-    turnaround() {
-      // same as runTime / numProcesses since they are all completed in one go
-      //console.log('runTime:', this.runTime, 'waitTime:', this.waitTime);
-      let val = (this.runTime / this.initLength).toPrecision(2);
-      this.result.turnaround = val;
-      return val;
     }
   },
   methods: {
@@ -196,12 +162,49 @@ export default {
       this.isPaused = true;
     },
     sendtoParent(event) {
+      // populates result
+      this.utilization();
+      this.throughput();
+      this.avgWaitTime();
+      this.turnaround();
       let data = {
         alg: 'RR',
         payload: this.result
       };
       this.$store.dispatch('passResults', data); // sends to parent
       //console.log('sending:', data, this.$store);
+    },
+    utilization() {
+      // calc the utilization: 1 - avgWaitTime ^ numProcesses
+      // skip first process: if localCopy.length < initLength and > 0
+      let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
+      //console.log('utilization: ', val);
+      this.result.utilization = val;
+      return val;
+    },
+    throughput() {
+      // calc the throughput: numProcesses / runTime
+      //console.log('computing throughput', this.runTime);
+      if (this.runTime > 0) {
+        let val = +(this.initLength / this.runTime).toPrecision(2);
+        //console.log('throughput: ', val);
+        this.result.throughput = val;
+        return val;
+      } else {
+        return 0;
+      }
+    },
+    avgWaitTime() {
+      let val = (this.waitTime / this.initLength).toPrecision(2);
+      this.result.avgWaitTime = val;
+      return val;
+    },
+    turnaround() {
+      // same as runTime / numProcesses since they are all completed in one go
+      //console.log('runTime:', this.runTime, 'waitTime:', this.waitTime);
+      let val = (this.runTime / this.initLength).toPrecision(2);
+      this.result.turnaround = val;
+      return val;
     }
   }
 }

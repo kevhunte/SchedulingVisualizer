@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
+  <!--<div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
     <h5>
       <div class="p-1">
         Throughput: {{this.throughput}}
@@ -53,7 +53,7 @@
         <b-icon-question v-b-tooltip.click title="sum(Kth process execution time) / numProcesses"></b-icon-question>
       </div>
     </h5>
-  </div>
+  </div>-->
 
 </div>
 </template>
@@ -107,7 +107,45 @@ export default {
       }
     }
   },
-  computed: {
+  methods: {
+    execute() {
+      //console.log('executing...');
+      this.currProcess = this.localCopy.shift(); // dequeque process
+      if (this.currProcess) { // do math for other variables
+        // executes for full time needed
+        this.runTime += this.currProcess.burstTime;
+        this.waitTime += this.localCopy.length < this.initLength - 1 ? this.currProcess.burstTime : 0;
+      }
+
+    },
+    startTimer() { // start animation train
+      console.log("starting...");
+      this.t = setInterval(() => {
+        if (!this.localCopy.length) { // stops itself on completion and sends results
+          clearInterval(this.t);
+          this.sendtoParent();
+        }
+        this.execute()
+        // keep track of total time needed. Inc clock ticks
+      }, this.interval);
+      this.isPaused = false;
+    },
+    stopTimer() {
+      clearInterval(this.t); // see if this works. Or set to null
+      this.isPaused = true;
+    },
+    sendtoParent(event) {
+      this.utilization();
+      this.throughput();
+      this.avgWaitTime();
+      this.turnaround();
+      let data = {
+        alg: 'LRJF',
+        payload: this.result
+      };
+      this.$store.dispatch('passResults', data); // sends to parent
+      //console.log('sending:', data, this.$store);
+    },
     utilization() {
       // calc the utilization: 1 - avgWaitTime ^ numProcesses
       // skip first process: if localCopy.length < initLength and > 0
@@ -139,42 +177,6 @@ export default {
       let val = (this.runTime / this.initLength).toPrecision(2);
       this.result.turnaround = val;
       return val;
-    }
-  },
-  methods: {
-    execute() {
-      //console.log('executing...');
-      this.currProcess = this.localCopy.shift(); // dequeque process
-      if (this.currProcess) { // do math for other variables
-        // executes for full time needed
-        this.runTime += this.currProcess.burstTime;
-        this.waitTime += this.localCopy.length < this.initLength - 1 ? this.currProcess.burstTime : 0;
-      }
-
-    },
-    startTimer() { // start animation train
-      console.log("starting...");
-      this.t = setInterval(() => {
-        if (!this.localCopy.length) { // stops itself on completion and sends results
-          clearInterval(this.t);
-          this.sendtoParent();
-        }
-        this.execute()
-        // keep track of total time needed. Inc clock ticks
-      }, this.interval);
-      this.isPaused = false;
-    },
-    stopTimer() {
-      clearInterval(this.t); // see if this works. Or set to null
-      this.isPaused = true;
-    },
-    sendtoParent(event) {
-      let data = {
-        alg: 'LRJF',
-        payload: this.result
-      };
-      this.$store.dispatch('passResults', data); // sends to parent
-      //console.log('sending:', data, this.$store);
     }
   }
 }
