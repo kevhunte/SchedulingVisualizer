@@ -67,7 +67,7 @@
         Results:
       </h6>
       <!--Load into a table to show the comparisons-->
-      <b-table striped hover :fields="fields" :items="this.$store.getters.results || null">
+      <b-table striped hover :fields="fields" :items="this.$store.getters.results || null" class="table-responsive">
       </b-table>
     </div>
   </div>
