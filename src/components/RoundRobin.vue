@@ -16,13 +16,11 @@
     <h6>
       Remaining Processes: {{this.localCopy.length}}
     </h6>
-    <!--Display time quantum here-->
-    <!--Toggleable buttons to pause and resume-->
     <b-button v-if="!this.isPaused && this.currProcess" pill @click="stopTimer()" variant="info">Pause</b-button>
     <b-button v-else-if="this.isPaused && this.currProcess" pill @click="startTimer()" variant="info">Resume</b-button>
 
-    <span class="">
-      <b-icon-arrow-right @click="speedUpTimer" v-if="this.localCopy.length > 3 && this.localCopy.length < this.initLength - 3" font-scale="1.5" v-b-tooltip.hover title="speed up"></b-icon-arrow-right>
+    <span class="" v-if="this.localCopy.length > 3 && this.localCopy.length < this.initLength - 2">
+      <strong @click="speedUpTimer"> 4x </strong>
     </span>
 
     <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
@@ -40,36 +38,10 @@
       </h6>
     </div>
   </div>
-
-  <!--<div id="calcContainer" v-if="!this.localCopy.length" class="p-1 animated fadeIn delay-2s">
-    <h5>
-      <div class="p-1">
-        Throughput: {{this.throughput}}
-        <b-icon-question v-b-tooltip.click title="numProcesses / run-time"></b-icon-question>
-      </div>
-      <div class="p-1">
-        Utilization: {{this.utilization}}
-        <b-icon-question v-b-tooltip.click title="1 - (avg wait time ^ numProcesses)"></b-icon-question>
-      </div>
-      <div class="p-1">
-        Avg Wait Time: {{this.avgWaitTime}}s
-        <b-icon-question v-b-tooltip.click title="sum(Kth process start time) / numProcesses"></b-icon-question>
-      </div>
-      <div class="p-1">
-        Avg Turnaround Time: {{this.turnaround}}s
-        <b-icon-question v-b-tooltip.click title="sum(Kth process execution time) / numProcesses"></b-icon-question>
-      </div>
-    </h5>
-  </div>-->
-
 </div>
 </template>
 
 <script>
-import {
-  BIconArrowRight
-} from 'bootstrap-vue/src/icons'
-
 export default {
   name: 'RR',
   props: {
@@ -82,9 +54,7 @@ export default {
       required: true
     }
   },
-  components: {
-    BIconArrowRight
-  },
+  components: {},
   created() {
     if (this.proc) { // find a way to make unique copy of values
       this.localCopy = this.proc.slice();
@@ -95,7 +65,6 @@ export default {
     setTimeout(() => {
       this.startTimer()
     }, 4000);
-    //this.startTimer();
   },
   data() {
     return {
@@ -117,7 +86,6 @@ export default {
   },
   methods: {
     execute() {
-      //console.log('executing...');
       this.runTime += 1; // simulate dispatch latency
       let remainingTime = 0;
       this.currProcess = this.localCopy.shift(); // dequeque process
@@ -138,8 +106,6 @@ export default {
           }
         });
 
-
-        // add to total runtime / waitTime clock
         this.runTime += currTimeUsed;
         this.waitTime += this.localCopy.length < this.initLength - 1 ? currTimeUsed : 0;
 
@@ -148,24 +114,21 @@ export default {
         } else { // store process total timeUsed before it is tossed
           this.summedTimeUsed += this.currProcess.timeUsed;
         }
-        //console.log('pid:', this.currProcess.id, 'timeUsed:', currTimeUsed, 'remaining time needed:', this.currProcess.burstTime);
       }
 
     },
-    startTimer() { // start animation train
-      console.log("starting...");
+    startTimer() {
       this.t = setInterval(() => {
-        if (!this.localCopy.length) { // stops itself on completion and sends results
+        if (!this.localCopy.length) {
           clearInterval(this.t);
           this.sendtoParent();
         }
         this.execute()
-        // keep track of total time needed. Inc clock ticks
       }, this.interval);
       this.isPaused = false;
     },
     stopTimer() {
-      clearInterval(this.t); // see if this works. Or set to null
+      clearInterval(this.t);
       this.isPaused = true;
     },
     speedUpTimer() {
@@ -186,23 +149,16 @@ export default {
         alg: 'RR',
         payload: this.result
       };
-      this.$store.dispatch('passResults', data); // sends to parent
-      //console.log('sending:', data, this.$store);
+      this.$store.dispatch('passResults', data);
     },
     utilization() {
-      // calc the utilization: 1 - avgWaitTime ^ numProcesses
-      // skip first process: if localCopy.length < initLength and > 0
       let val = 1 - (((this.waitTime / this.initLength) * 0.001) ** this.initLength).toPrecision(2);
-      //console.log('utilization: ', val);
       this.result.utilization = val;
       return val;
     },
     throughput() {
-      // calc the throughput: numProcesses / runTime
-      //console.log('computing throughput', this.runTime);
       if (this.runTime > 0) {
         let val = +(this.initLength / this.runTime).toPrecision(2);
-        //console.log('throughput: ', val);
         this.result.throughput = val;
         return val;
       } else {
@@ -215,8 +171,6 @@ export default {
       return val;
     },
     turnaround() {
-      // same as runTime / numProcesses since they are all completed in one go
-      //console.log('runTime:', this.runTime, 'waitTime:', this.waitTime);
       let val = (this.runTime / this.initLength).toPrecision(2);
       this.result.turnaround = val;
       return val;

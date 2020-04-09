@@ -1,20 +1,16 @@
 <template>
 <div id="app">
-  <!--<img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>-->
   <div id="navContainer">
     <b-navbar type="dark" variant="dark" class="fixed-top">
-      <b-navbar-brand href="#">Scheduling Visualizer</b-navbar-brand>
-
-      <!--<b-navbar-toggle target="nav-collapse"></b-navbar-toggle>-->
+      <b-navbar-brand>Scheduling Visualizer</b-navbar-brand>
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
           <b-nav-item-dropdown text="Algorithm" :disabled="this.processes.length <= 0">
-            <b-dropdown-item @click="setAlg('FCFS')" href="#" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
-            <b-dropdown-item @click="setAlg('LRJF')" href="#" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
-            <b-dropdown-item @click="setAlg('RR')" href="#" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
-            <b-dropdown-item @click="setAlg('PQ')" href="#" :active="this.Algorithm == 'PQ'">Priority Queue</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('FCFS')" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('LRJF')" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('RR')" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
+            <b-dropdown-item @click="setAlg('PQ')" :active="this.Algorithm == 'PQ'">Priority Queue</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
 
@@ -22,9 +18,6 @@
     </b-navbar>
   </div>
   <div id="otherData" class="col-md-7 mx-auto">
-    <!--<h4>
-      Scheduling Visualizer
-    </h4>-->
 
     <div id="processesContainer">
       <h5>Select a number of processes to simulate:</h5>
@@ -40,7 +33,6 @@
         <h6 id="algPicker" v-if="!this.Algorithm && this.processes.length > 0" class="pt-2 animated infinite pulse" style="color: #42B983;">
           Now select a scheduling algorithm from the header tab above
         </h6>
-        <!--input for time quantum if necessary-->
         <div v-if="this.Algorithm=='RR' && this.quant <= 0" class="p-3 animated fadeIn">
           <h6>
             Select a time quantum value below. This determines how long a process will execute for.
@@ -56,17 +48,15 @@
     </div>
 
     <div id="AlgContainer" class="p-3">
-      <FCFS v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
-      <LRJF v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
-      <RR v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.RRProcesses" :quantum="this.quant" />
-      <PQ v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
+      <FCFS id="FCFS" v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
+      <LRJF id="LRJF" v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
+      <RR id="RR" v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.RRProcesses" :quantum="this.quant" />
+      <PQ id="PQ" v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
     </div>
-    <!--Comparison container for other algorithms-->
     <div id="ComparisonContainer" v-if="this.$store.getters.results.length" class="pb-5">
       <h6>
         Results:
       </h6>
-      <!--Load into a table to show the comparisons-->
       <b-table striped hover :fields="fields" :items="this.$store.getters.results || null" class="table-responsive">
       </b-table>
     </div>
@@ -75,20 +65,13 @@
 </template>
 
 <script>
-//import HelloWorld from './components/HelloWorld.vue'
-import FCFS from './components/FCFS.vue'
-import LRJF from './components/LRJF.vue'
-import PQ from './components/PriorityQueue.vue'
-import RR from './components/RoundRobin.vue'
-
 export default {
   name: 'App',
   components: {
-    //HelloWorld
-    FCFS,
-    LRJF,
-    RR,
-    PQ
+    FCFS: () => import('./components/FCFS.vue'),
+    LRJF: () => import('./components/LRJF.vue'),
+    RR: () => import('./components/RoundRobin.vue'),
+    PQ: () => import('./components/PriorityQueue.vue')
   },
   data() {
     return {
@@ -98,7 +81,7 @@ export default {
       numProcesses: 0,
       quantIn: '',
       quant: 0,
-      fields: ['Algorithm', 'throughput', 'utilization', 'avgWaitTime', 'turnaround'] // for table
+      fields: ['Algorithm', 'throughput', 'utilization', 'avgWaitTime', 'turnaround']
     }
   },
   watch: {
@@ -113,12 +96,10 @@ export default {
   },
   methods: {
     setQuant() {
-      //console.log('gotten:', this.quantIn);
-      let val = parseInt(this.quantIn.replace(/[^0-9]+/g, "")); // numbers only
-      //console.log('After cleansing:', val);
+      let val = parseInt(this.quantIn.replace(/[^0-9]+/g, ""));
       if (typeof val == 'number') {
-        val = val > 15 ? 15 : val; // cap at 15
-        val = val < 1 ? 1 : val; // cap between 1 and 15
+        val = val > 15 ? 15 : val;
+        val = val < 1 ? 1 : val;
         this.quant = val;
       }
     },
@@ -130,33 +111,28 @@ export default {
       if (this.numProcesses < 1) {
         return;
       }
-      //console.log('generating...')
       for (let i = 0; i < this.numProcesses; i++) {
-        // priority from 1 to numProcesses
         let p = {
           "id": i,
           "priority": Math.floor((Math.random() * (this.numProcesses - 1)) + 1),
           "burstTime": Math.floor((Math.random() * (15 - 1)) + 1),
           "timeUsed": 0
         }
-        let p2 = { // two copies needed so RR doesn't mutate p for other algs
+        let p2 = {
           ...p
         };
         this.processes.push(p);
         this.RRProcesses.push(p2);
       }
-      //console.log(this.processes);
     },
     clearProcesses() {
-      //console.log('clearing...');
-      this.processes = []; // allocates new array. Won't break ref for components
+      this.processes = [];
       this.RRProcesses = [];
       this.Algorithm = null;
       this.numProcesses = 0;
       this.quantIn = '';
       this.quant = 0;
-      this.$store.dispatch('resetResults'); // clear table
-      //console.log(this.processes);
+      this.$store.dispatch('resetResults');
     }
   }
 }
@@ -176,12 +152,12 @@ export default {
 }
 
 #algPicker {
+    -webkit-animation-duration: 2s;
     animation-duration: 2s;
 }
 
 .dropdown-item.active,
 .dropdown-item:active {
-    // navbar header elements
     color: #42B983;
     font-weight: bold;
     background-color: transparent;
@@ -193,5 +169,112 @@ export default {
 
 .progress-bar {
     background-color: #42B983;
+}
+
+.animated {
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@media (print), (prefers-reduced-motion: reduce) {
+    .animated {
+        -webkit-animation-duration: 1ms !important;
+        animation-duration: 1ms !important;
+        -webkit-transition-duration: 1ms !important;
+        transition-duration: 1ms !important;
+        -webkit-animation-iteration-count: 1 !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+.animated.infinite {
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+}
+
+.animated.delay-1s {
+    -webkit-animation-delay: 1s;
+    animation-delay: 1s;
+}
+
+.animated.delay-2s {
+    -webkit-animation-delay: 2s;
+    animation-delay: 2s;
+}
+
+.animated.delay-3s {
+    -webkit-animation-delay: 3s;
+    animation-delay: 3s;
+}
+
+.animated.delay-4s {
+    -webkit-animation-delay: 4s;
+    animation-delay: 4s;
+}
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.fadeIn {
+    -webkit-animation-name: fadeIn;
+    animation-name: fadeIn;
+}
+
+@-webkit-keyframes pulse {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.05, 1.05, 1.05);
+        transform: scale3d(1.05, 1.05, 1.05);
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+@keyframes pulse {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.05, 1.05, 1.05);
+        transform: scale3d(1.05, 1.05, 1.05);
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+.pulse {
+    -webkit-animation-name: pulse;
+    animation-name: pulse;
 }
 </style>

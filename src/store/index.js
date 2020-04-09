@@ -9,14 +9,11 @@ export default new Vuex.Store({
   },
   mutations: {
     storeResults(state, val){
-      //state.results = value;
-      // dynamically grow array
-      console.log('received:', val);
-      if(!state.results){ // always grow if empty
+      if(!state.results){
         state.results.push(val.payload);
         state.results.sort((a,b) => a.id > b.id ? 1 : -1);
       }
-      else{ // check if less than 4. If not, all simulations have been run already
+      else{
         if(state.results.length < 4){
           state.results.push(val.payload);
           state.results.sort((a,b) => a.id > b.id ? 1 : -1);
@@ -25,13 +22,11 @@ export default new Vuex.Store({
 
     },
     clearResults(state){
-      console.log('resetting');
       state.results = [];
     }
   },
   actions: {
     passResults(context,results){
-      //console.log('reached here',results);
       context.commit('storeResults',results);
     },
     resetResults(context){
