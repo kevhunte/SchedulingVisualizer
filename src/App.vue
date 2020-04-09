@@ -17,7 +17,7 @@
       </b-collapse>
     </b-navbar>
   </div>
-  <div id="otherData" class="col-md-7 mx-auto">
+  <div id="otherData" class="col-lg-7 mx-auto">
 
     <div id="processesContainer">
       <h5>Select a number of processes to simulate:</h5>
@@ -155,6 +155,13 @@ export default {
     -webkit-animation-duration: 2s;
     animation-duration: 2s;
 }
+
+//@media (min-width: 768px) {
+.table {
+    margin: auto;
+    width: 75% !important;
+}
+//}
 
 .dropdown-item.active,
 .dropdown-item:active {
