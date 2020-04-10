@@ -7,7 +7,7 @@
   </h6>
 
   <h6 class="pb-2 animated fadeIn delay-2s">
-    The below queue shows the amount of processes waiting to execute.
+    The below queue shows the amount of processes waiting to execute.<br> Each process executes for 5 seconds.
   </h6>
 
   <div id="simContainer" v-if="this.localCopy" class="p-4 animated fadeIn delay-4s">
@@ -18,8 +18,8 @@
     <b-button v-if="!this.isPaused && this.currProcess" pill @click="stopTimer()" variant="info">Pause</b-button>
     <b-button v-else-if="this.isPaused && this.currProcess" pill @click="startTimer()" variant="info">Resume</b-button>
 
-    <span class="" v-if="this.localCopy.length > 3 && this.localCopy.length < this.initLength - 2">
-      <strong @click="speedUpTimer"> 4x </strong>
+    <span class="" v-if="this.localCopy.length > 3 && this.iters >= 3">
+      <strong @click="speedUpTimer"> Speed Up (4x) </strong>
     </span>
 
     <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
@@ -33,7 +33,7 @@
         priority: {{this.currProcess.priority}}
       </h6>
       <h6>
-        burst time: {{this.currProcess.burstTime}}s
+        remaining burst time: {{this.currProcess.burstTime}}s
       </h6>
     </div>
   </div>
@@ -46,6 +46,10 @@ export default {
   props: {
     proc: {
       type: Array,
+      required: true
+    },
+    quantum: {
+      type: Number,
       required: true
     }
   },
@@ -74,6 +78,8 @@ export default {
       isPaused: false,
       runTime: 0,
       waitTime: 0,
+      summedTimeUsed: 0,
+      iters: 0,
       result: {
         id: 4,
         Algorithm: 'PQ'
@@ -84,12 +90,35 @@ export default {
   methods: {
     execute() {
       this.runTime += 1; // simulate dispatch latency
-      this.currProcess = this.localCopy.shift();
-      if (this.currProcess) {
-        this.runTime += this.currProcess.burstTime;
-        this.waitTime += this.localCopy.length < this.initLength - 1 ? this.currProcess.burstTime : 0;
-      }
+      this.iters += 1;
+      let remainingTime = 0;
+      this.currProcess = this.localCopy.shift(); // dequeque process
+      if (this.currProcess) { // do math for other variables
+        if (this.quantum > this.currProcess.burstTime) {
+          remainingTime = this.quantum - this.currProcess.burstTime;
+        }
+        //remaining burst time after execution
+        this.currProcess.burstTime = this.currProcess.burstTime - this.quantum > 0 ? this.currProcess.burstTime - this.quantum : 0;
+        // timeUsed in CPU.
+        let currTimeUsed = this.quantum - remainingTime;
+        this.currProcess.timeUsed += currTimeUsed;
 
+        //Propogate this timeUsed to all threads turnaround time that have already started
+        this.localCopy.forEach((item, i) => {
+          if (item.timeUsed != 0) {
+            item.timeUsed += currTimeUsed;
+          }
+        });
+
+        this.runTime += currTimeUsed;
+        this.waitTime += this.localCopy.length < this.initLength - 1 ? currTimeUsed : 0;
+
+        if (this.currProcess.burstTime > 0) { // if burst time is greater than 0 back in queue
+          this.localCopy.push(this.currProcess);
+        } else { // store process total timeUsed before it is tossed
+          this.summedTimeUsed += this.currProcess.timeUsed;
+        }
+      }
     },
     startTimer() {
       this.t = setInterval(() => {

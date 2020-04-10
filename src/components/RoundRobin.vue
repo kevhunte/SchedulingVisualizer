@@ -8,7 +8,8 @@
   </h6>
 
   <h6 class="pb-2 animated fadeIn delay-2s">
-    The below queue shows the amount of processes waiting to execute.
+    The below queue shows the amount of processes waiting to execute.<br>
+    Each process executes for the time quantum selected above.
   </h6>
 
   <div id="simContainer" v-if="this.localCopy" class="p-4 animated fadeIn delay-4s">
@@ -19,8 +20,8 @@
     <b-button v-if="!this.isPaused && this.currProcess" pill @click="stopTimer()" variant="info">Pause</b-button>
     <b-button v-else-if="this.isPaused && this.currProcess" pill @click="startTimer()" variant="info">Resume</b-button>
 
-    <span class="" v-if="this.localCopy.length > 3 && this.localCopy.length < this.initLength - 2">
-      <strong @click="speedUpTimer"> 4x </strong>
+    <span class="" v-if="this.localCopy.length > 3 && this.iters >= 3">
+      <strong @click="speedUpTimer"> Speed Up (4x) </strong>
     </span>
 
     <div id="processInstance" v-if="this.currProcess" class="col-md-7 mx-auto p-1 animated fadeIn">
@@ -77,6 +78,7 @@ export default {
       runTime: 0,
       waitTime: 0,
       summedTimeUsed: 0,
+      iters: 0,
       result: {
         id: 3,
         Algorithm: 'RR'
@@ -87,6 +89,7 @@ export default {
   methods: {
     execute() {
       this.runTime += 1; // simulate dispatch latency
+      this.iters += 1;
       let remainingTime = 0;
       this.currProcess = this.localCopy.shift(); // dequeque process
       if (this.currProcess) { // do math for other variables

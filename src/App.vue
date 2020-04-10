@@ -48,10 +48,10 @@
     </div>
 
     <div id="AlgContainer" class="p-3">
-      <FCFS id="FCFS" v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.processes" />
-      <LRJF id="LRJF" v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.processes" />
+      <FCFS id="FCFS" v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.FCFSProcesses" :quantum="5" />
+      <LRJF id="LRJF" v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.LRJFProcesses" :quantum="5" />
       <RR id="RR" v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.RRProcesses" :quantum="this.quant" />
-      <PQ id="PQ" v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.processes" />
+      <PQ id="PQ" v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.PQProcesses" :quantum="5" />
     </div>
     <div id="ComparisonContainer" v-if="this.$store.getters.results.length" class="pb-5">
       <h6>
@@ -77,6 +77,9 @@ export default {
     return {
       Algorithm: null,
       processes: [],
+      FCFSProcesses: [],
+      LRJFProcesses: [],
+      PQProcesses: [],
       RRProcesses: [],
       numProcesses: 0,
       quantIn: '',
@@ -118,15 +121,34 @@ export default {
           "burstTime": Math.floor((Math.random() * (15 - 1)) + 1),
           "timeUsed": 0
         }
+
         let p2 = {
           ...p
-        };
+        }
+
+        let p3 = {
+          ...p
+        }
+
+        let p4 = {
+          ...p
+        }
+        let p5 = {
+          ...p
+        }
+
         this.processes.push(p);
-        this.RRProcesses.push(p2);
+        this.LRJFProcesses.push(p5);
+        this.FCFSProcesses.push(p2);
+        this.RRProcesses.push(p3);
+        this.PQProcesses.push(p4);
       }
     },
     clearProcesses() {
       this.processes = [];
+      this.LRJFProcesses = [];
+      this.FCFSProcesses = [];
+      this.PQProcesses = [];
       this.RRProcesses = [];
       this.Algorithm = null;
       this.numProcesses = 0;
