@@ -131,7 +131,7 @@ export default {
     },
     throughput() {
       if (this.runTime > 0) {
-        let val = +(this.initLength / this.runTime).toPrecision(2);
+        let val = +(this.initLength / (this.runTime * 0.001)).toFixed(2);
         this.result.throughput = val;
         return val;
       } else {
@@ -139,12 +139,12 @@ export default {
       }
     },
     avgWaitTime() {
-      let val = (this.waitTime / this.initLength).toPrecision(2);
+      let val = (this.waitTime / this.initLength).toFixed(2);
       this.result.avgWaitTime = val;
       return val;
     },
     turnaround() {
-      let val = (this.runTime / this.initLength).toPrecision(2);
+      let val = (this.runTime / this.initLength).toFixed(2);
       this.result.turnaround = val;
       return val;
     }

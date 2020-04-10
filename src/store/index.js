@@ -9,6 +9,11 @@ export default new Vuex.Store({
   },
   mutations: {
     storeResults(state, val){
+      for (let x in state.results) {
+        if(state.results[x].Algorithm.includes(val.payload.Algorithm)){
+          return;
+        }
+      }
       if(!state.results){
         state.results.push(val.payload);
         state.results.sort((a,b) => a.id > b.id ? 1 : -1);
