@@ -4,14 +4,22 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
     <link rel="icon" href="<%= BASE_URL %>favicon.png">
     <title>Scheduling Visualizer</title>
     <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">-->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="/icons/apple-icon-180.png">
   </head>
   <body>
     <noscript>
       <strong>We're sorry but this Scheduling Visualizer doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+      }
+    </script>
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
