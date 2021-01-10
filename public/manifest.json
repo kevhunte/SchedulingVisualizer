@@ -1,7 +1,7 @@
 {
     "name":"Scheduling Visualizer",
     "short_name":"Sched Visualizer",
-    "start_url":"/",
+    "start_url":"/index.html",
     "icons":[
         {
           "src": "/icons/manifest-icon-192.png",
