@@ -17,6 +17,14 @@
     </noscript>
     <script>
       if ('serviceWorker' in navigator) {
+        // updates service worker on changes
+        if (navigator.serviceWorker.controller) {
+          const registrations = navigator.serviceWorker.getRegistration().then(
+            (registration) => {
+              registration.unregister();
+            }
+          )
+        }
         navigator.serviceWorker.register('/service-worker.js')
       }
     </script>
