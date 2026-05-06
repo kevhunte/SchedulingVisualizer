@@ -35,6 +35,22 @@
       <h6>priority: {{ currProcess.priority }}</h6>
       <h6>remaining burst time: {{ currProcess.burstTime }}s</h6>
     </div>
+
+    <div v-if="localCopy.length > 0" class="mt-3">
+      <h6 class="text-muted mb-2">Up Next:</h6>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <div v-for="(p, index) in localCopy.slice(0, 3)" :key="p.id"
+             class="card border-secondary text-start"
+             style="min-width: 110px; opacity: 0.75">
+          <div class="card-body p-2 small">
+            <div class="text-muted fw-bold mb-1">#{{ index + 1 }} in queue</div>
+            <div>pid: {{ p.id }}</div>
+            <div>priority: {{ p.priority }}</div>
+            <div>burst: {{ p.burstTime }}s</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </template>
