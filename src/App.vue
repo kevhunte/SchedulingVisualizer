@@ -25,7 +25,15 @@
     </div>
   </nav>
 
-  <div id="otherData" class="col-lg-8 mx-auto">
+  <div class="page-layout">
+    <!-- Left sidebar ad (xl+ only) -->
+    <div class="d-none d-xl-block sidebar-col">
+      <div class="sidebar-sticky">
+        <AdUnit slot-id="4238599264" :sidebar="true" />
+      </div>
+    </div>
+
+  <div id="otherData" class="col-lg-8 mx-auto flex-grow-1">
 
     <!-- Intro section -->
     <div class="intro-section text-start p-4 mb-4 rounded border bg-light">
@@ -44,8 +52,7 @@
       </ol>
     </div>
 
-    <!-- Side ad (shown after processes generated) -->
-    <AdUnit v-if="processes.length > 0" slot-id="4238599264" :key="'side'" />
+    <AdUnit slot-id="4238599264" :key="'side'" />
 
     <!-- Algorithm selection cards (always visible, active after processes generated) -->
     <div class="row g-3 mt-3 mb-2">
@@ -132,9 +139,16 @@
       </div>
     </div>
 
-    <!-- Banner ad (shown when results are available) -->
-    <AdUnit v-if="resultsStore.results.length > 0" slot-id="5360109249" :key="'banner'" />
+    <AdUnit slot-id="5360109249" :key="'banner'" />
 
+  </div>
+
+    <!-- Right sidebar ad (xl+ only) -->
+    <div class="d-none d-xl-block sidebar-col">
+      <div class="sidebar-sticky">
+        <AdUnit slot-id="4238599264" :sidebar="true" />
+      </div>
+    </div>
   </div>
 </div>
 </template>
@@ -217,8 +231,8 @@ export default {
   },
   methods: {
     setQuant() {
-      let val = parseInt(this.quantIn.replace(/[^0-9]+/g, ''))
-      if (typeof val === 'number' && !isNaN(val)) {
+      let val = parseInt(this.quantIn)
+      if (!isNaN(val)) {
         val = val > 15 ? 15 : val
         val = val < 1 ? 1 : val
         this.quant = val
@@ -267,6 +281,28 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.page-layout {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.sidebar-col {
+  width: 170px;
+  min-width: 170px;
+  flex-shrink: 0;
+  padding-top: 80px;
+}
+
+.sidebar-sticky {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
 #otherData {
