@@ -1,77 +1,157 @@
 <template>
 <div id="app">
-  <div id="navContainer">
-    <b-navbar type="dark" variant="dark" class="fixed-top">
-      <b-navbar-brand>Scheduling Visualizer</b-navbar-brand>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <span class="navbar-brand fw-bold">Scheduling Visualizer</span>
+      <div class="position-relative">
+        <button
+          class="btn btn-outline-light btn-sm"
+          :disabled="processes.length === 0"
+          @click="dropdownOpen = !dropdownOpen">
+          Algorithm<span v-if="Algorithm"> &mdash; {{ algLabel }}</span>
+        </button>
+        <ul v-if="dropdownOpen" class="dropdown-menu show position-absolute end-0 mt-1">
+          <li v-for="alg in algorithms" :key="alg.key">
+            <button
+              class="dropdown-item"
+              :class="{ 'fw-bold text-success': Algorithm === alg.key }"
+              @click="setAlg(alg.key)">
+              {{ alg.name }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-      <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
-          <b-nav-item-dropdown text="Algorithm" :disabled="this.processes.length <= 0">
-            <b-dropdown-item @click="setAlg('FCFS')" :active="this.Algorithm == 'FCFS'">FCFS</b-dropdown-item>
-            <b-dropdown-item @click="setAlg('LRJF')" :active="this.Algorithm == 'LRJF'">LRJF</b-dropdown-item>
-            <b-dropdown-item @click="setAlg('RR')" :active="this.Algorithm == 'RR'">Round Robin</b-dropdown-item>
-            <b-dropdown-item @click="setAlg('PQ')" :active="this.Algorithm == 'PQ'">Priority Queue</b-dropdown-item>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
+  <div id="otherData" class="col-lg-8 mx-auto">
 
-      </b-collapse>
-    </b-navbar>
-  </div>
-  <div id="otherData" class="col-lg-7 mx-auto">
+    <!-- Intro section -->
+    <div class="intro-section text-start p-4 mb-4 rounded border bg-light">
+      <h4 class="fw-bold">What is this?</h4>
+      <p class="mb-2">
+        This tool simulates how an <strong>operating system dispatcher</strong> assigns CPU time to competing processes using different <strong>scheduling algorithms</strong>.
+        Each algorithm prioritizes processes differently — affecting throughput, wait time, and CPU utilization.
+      </p>
+      <h6 class="fw-bold mt-3">How to use it:</h6>
+      <ol class="mb-0">
+        <li>Use the slider to choose how many processes to simulate (1–50)</li>
+        <li>Click <strong>Generate Processes</strong> — each process gets a random burst time and priority</li>
+        <li>Select a scheduling algorithm from the cards below (or the dropdown in the header)</li>
+        <li>Watch the simulation run — pause, resume, or speed up anytime</li>
+        <li>Try multiple algorithms and compare their performance in the results table</li>
+      </ol>
+    </div>
 
-    <div id="processesContainer">
-      <h5>Select a number of processes to simulate:</h5>
-      <b-form-input v-model="numProcesses" type="range" min="1" max="50" class="pl-4 pr-4"></b-form-input>
-      <div v-if="numProcesses > 0">
-        <h6>{{this.numProcesses}}</h6>
-        <b-button pill v-if="this.processes.length == 0" @click="generateProcesses()" variant="success">Generate Processes</b-button>
-        <b-button pill v-else-if="this.processes.length > 0" @click="clearProcesses()" variant="danger">Reset</b-button>
-        <h6 v-if="this.processes.length > 0" class="pt-3"> Number of Processes: {{this.processes.length}}</h6>
+    <!-- Side ad (shown after processes generated) -->
+    <AdUnit v-if="processes.length > 0" slot-id="4238599264" :key="'side'" />
 
-        <h6 v-if="this.quant > 0" class="pt-3"> Time quantum is set to: {{this.quant}}s</h6>
-
-        <h6 id="algPicker" v-if="!this.Algorithm && this.processes.length > 0" class="pt-2 animated infinite pulse" style="color: #42B983;">
-          Now select a scheduling algorithm from the header tab above
-        </h6>
-        <div v-if="this.Algorithm=='RR' && this.quant <= 0" class="p-3 animated fadeIn">
-          <h6>
-            Select a time quantum value below. This determines how long a process will execute for.
-          </h6>
-          <b-input-group size="md">
-            <b-form-input v-model="quantIn" type="number" min="1" max="15" placeholder="Select a number between 1 and 15:"></b-form-input>
-            <b-input-group-append>
-              <b-button @click="setQuant" @keyup.enter="setQuant" variant="info">Accept</b-button>
-            </b-input-group-append>
-          </b-input-group>
+    <!-- Algorithm selection cards (always visible, active after processes generated) -->
+    <div class="row g-3 mt-3 mb-2">
+      <div class="col-sm-6 col-lg-3" v-for="alg in algorithms" :key="alg.key">
+        <div
+          class="card h-100 alg-card"
+          :class="{
+            'border-success border-2 alg-card-active': Algorithm === alg.key,
+            'alg-card-disabled': processes.length === 0
+          }"
+          @click="processes.length > 0 && setAlg(alg.key)"
+          :style="processes.length > 0 ? 'cursor: pointer' : 'cursor: not-allowed; opacity: 0.5'">
+          <div class="card-body text-start">
+            <h6 class="card-title fw-bold">{{ alg.name }}</h6>
+            <p class="card-text small text-muted mb-0">{{ alg.desc }}</p>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Process controls -->
+    <div id="processesContainer" class="mt-3">
+      <h5>Select a number of processes to simulate:</h5>
+      <input v-model="numProcesses" type="range" min="1" max="50" class="form-range px-4">
+      <div v-if="numProcesses > 0">
+        <h6>{{ numProcesses }}</h6>
+        <button v-if="processes.length === 0" @click="generateProcesses()" class="btn btn-success rounded-pill">Generate Processes</button>
+        <button v-else @click="clearProcesses()" class="btn btn-danger rounded-pill">Reset</button>
+        <h6 v-if="processes.length > 0" class="pt-3">Number of Processes: {{ processes.length }}</h6>
+        <h6 v-if="quant > 0" class="pt-3">Time quantum is set to: {{ quant }}s</h6>
+      </div>
+    </div>
+
+    <!-- Round Robin quantum input -->
+    <div v-if="Algorithm === 'RR' && quant <= 0" class="p-3 animated fadeIn">
+      <h6>Select a time quantum value. This determines how long each process executes before cycling to the next.</h6>
+      <div class="input-group mx-auto" style="max-width: 400px">
+        <input
+          v-model="quantIn"
+          type="number"
+          min="1"
+          max="15"
+          class="form-control"
+          placeholder="Enter a number between 1 and 15">
+        <button @click="setQuant" class="btn btn-info text-white">Accept</button>
+      </div>
+    </div>
+
+    <!-- Algorithm simulation -->
     <div id="AlgContainer" class="p-3">
-      <FCFS id="FCFS" v-if="this.Algorithm=='FCFS'" class="animated fadeIn" :proc="this.FCFSProcesses" :quantum="5" />
-      <LRJF id="LRJF" v-if="this.Algorithm=='LRJF'" class="animated fadeIn" :proc="this.LRJFProcesses" :quantum="5" />
-      <RR id="RR" v-if="this.Algorithm=='RR' && this.quant > 0" class="animated fadeIn" :proc="this.RRProcesses" :quantum="this.quant" />
-      <PQ id="PQ" v-if="this.Algorithm=='PQ'" class="animated fadeIn" :proc="this.PQProcesses" :quantum="5" />
+      <FCFS v-if="Algorithm === 'FCFS'" class="animated fadeIn" :proc="FCFSProcesses" :quantum="5" />
+      <LRJF v-if="Algorithm === 'LRJF'" class="animated fadeIn" :proc="LRJFProcesses" :quantum="5" />
+      <RR v-if="Algorithm === 'RR' && quant > 0" class="animated fadeIn" :proc="RRProcesses" :quantum="quant" />
+      <PQ v-if="Algorithm === 'PQ'" class="animated fadeIn" :proc="PQProcesses" :quantum="5" />
     </div>
-    <div id="ComparisonContainer" v-if="this.$store.getters.results.length" class="pb-5">
-      <h6>
-        Results:
-      </h6>
-      <b-table striped hover :fields="fields" :items="this.$store.getters.results || null" class="table-responsive">
-      </b-table>
+
+    <!-- Results table -->
+    <div v-if="resultsStore.results.length > 0" id="ComparisonContainer" class="pb-3">
+      <h6>Results:</h6>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover mx-auto" style="width: 80%">
+          <thead>
+            <tr>
+              <th v-for="f in fields" :key="f">{{ fieldLabels[f] }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in resultsStore.results" :key="row.Algorithm">
+              <td v-for="f in fields" :key="f">{{ row[f] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Metrics key -->
+      <div class="text-start p-3 rounded border bg-light small mt-2 mx-auto" style="max-width: 600px">
+        <strong>Metrics explained:</strong>
+        <ul class="mb-0 mt-1">
+          <li><strong>Throughput</strong> — processes completed per second</li>
+          <li><strong>Utilization</strong> — fraction of time the CPU was actively executing (1.0 = 100%)</li>
+          <li><strong>Avg Wait Time</strong> — average time a process spent waiting before it began executing</li>
+          <li><strong>Turnaround</strong> — average total time from process arrival to completion</li>
+        </ul>
+      </div>
     </div>
+
+    <!-- Banner ad (shown when results are available) -->
+    <AdUnit v-if="resultsStore.results.length > 0" slot-id="5360109249" :key="'banner'" />
+
   </div>
 </div>
 </template>
 
 <script>
+import { useResultsStore } from './store/results'
+import AdUnit from './components/AdUnit.vue'
+import FCFS from './components/FCFS.vue'
+import LRJF from './components/LRJF.vue'
+import RR from './components/RoundRobin.vue'
+import PQ from './components/PriorityQueue.vue'
+
 export default {
   name: 'App',
-  components: {
-    FCFS: () => import('./components/FCFS.vue'),
-    LRJF: () => import('./components/LRJF.vue'),
-    RR: () => import('./components/RoundRobin.vue'),
-    PQ: () => import('./components/PriorityQueue.vue')
+  components: { FCFS, LRJF, RR, PQ, AdUnit },
+  setup() {
+    return { resultsStore: useResultsStore() }
   },
   data() {
     return {
@@ -84,226 +164,196 @@ export default {
       numProcesses: 0,
       quantIn: '',
       quant: 0,
-      fields: ['Algorithm', 'throughput', 'utilization', 'avgWaitTime', 'turnaround']
+      dropdownOpen: false,
+      fields: ['Algorithm', 'throughput', 'utilization', 'avgWaitTime', 'turnaround'],
+      fieldLabels: {
+        Algorithm: 'Algorithm',
+        throughput: 'Throughput',
+        utilization: 'Utilization',
+        avgWaitTime: 'Avg Wait Time',
+        turnaround: 'Turnaround'
+      },
+      algorithms: [
+        {
+          key: 'FCFS',
+          name: 'FCFS',
+          desc: 'First Come, First Served: processes run in arrival order. Simple and predictable, but short jobs may wait behind long ones.'
+        },
+        {
+          key: 'LRJF',
+          name: 'LRJF',
+          desc: 'Longest Remaining Job First: prioritizes the longest jobs. Maximizes CPU utilization for burst-heavy workloads.'
+        },
+        {
+          key: 'RR',
+          name: 'Round Robin',
+          desc: 'Each process gets a fixed time slice before cycling to the next. Balanced and responsive — requires setting a time quantum.'
+        },
+        {
+          key: 'PQ',
+          name: 'Priority Queue',
+          desc: 'Processes with the highest priority execute first. Ideal for real-time or critical-task scenarios.'
+        }
+      ]
+    }
+  },
+  computed: {
+    selectedAlgorithm() {
+      return this.algorithms.find(a => a.key === this.Algorithm) || null
+    },
+    algLabel() {
+      const found = this.algorithms.find(a => a.key === this.Algorithm)
+      return found ? found.name : this.Algorithm
     }
   },
   watch: {
-    'Algorithm': function(val) {
-      if (val) {
-        if (!val.includes('RR')) { // clear element when not Round Robin
-          this.quantIn = '';
-          this.quant = 0;
-        }
+    Algorithm(val) {
+      if (val && !val.includes('RR')) {
+        this.quantIn = ''
+        this.quant = 0
       }
+      this.dropdownOpen = false
     }
   },
   methods: {
     setQuant() {
-      let val = parseInt(this.quantIn.replace(/[^0-9]+/g, ""));
-      if (typeof val == 'number') {
-        val = val > 15 ? 15 : val;
-        val = val < 1 ? 1 : val;
-        this.quant = val;
+      let val = parseInt(this.quantIn.replace(/[^0-9]+/g, ''))
+      if (typeof val === 'number' && !isNaN(val)) {
+        val = val > 15 ? 15 : val
+        val = val < 1 ? 1 : val
+        this.quant = val
       }
     },
     setAlg(alg) {
-      this.Algorithm = alg;
-      // do more stuff here
+      this.Algorithm = alg
+      this.dropdownOpen = false
     },
     generateProcesses() {
-      if (this.numProcesses < 1) {
-        return;
-      }
+      if (this.numProcesses < 1) return
       for (let i = 0; i < this.numProcesses; i++) {
-        let p = {
-          "id": i,
-          "priority": Math.floor((Math.random() * (this.numProcesses - 1)) + 1),
-          "burstTime": Math.floor((Math.random() * (15 - 1)) + 1),
-          "timeUsed": 0
+        const p = {
+          id: i,
+          priority: Math.floor((Math.random() * (this.numProcesses - 1)) + 1),
+          burstTime: Math.floor((Math.random() * (15 - 1)) + 1),
+          timeUsed: 0
         }
-
-        let p2 = {
-          ...p
-        }
-
-        let p3 = {
-          ...p
-        }
-
-        let p4 = {
-          ...p
-        }
-        let p5 = {
-          ...p
-        }
-
-        this.processes.push(p);
-        this.LRJFProcesses.push(p5);
-        this.FCFSProcesses.push(p2);
-        this.RRProcesses.push(p3);
-        this.PQProcesses.push(p4);
+        this.processes.push(p)
+        this.LRJFProcesses.push({ ...p })
+        this.FCFSProcesses.push({ ...p })
+        this.RRProcesses.push({ ...p })
+        this.PQProcesses.push({ ...p })
       }
     },
     clearProcesses() {
-      this.processes = [];
-      this.LRJFProcesses = [];
-      this.FCFSProcesses = [];
-      this.PQProcesses = [];
-      this.RRProcesses = [];
-      this.Algorithm = null;
-      this.numProcesses = 0;
-      this.quantIn = '';
-      this.quant = 0;
-      this.$store.dispatch('resetResults');
+      this.processes = []
+      this.LRJFProcesses = []
+      this.FCFSProcesses = []
+      this.PQProcesses = []
+      this.RRProcesses = []
+      this.Algorithm = null
+      this.numProcesses = 0
+      this.quantIn = ''
+      this.quant = 0
+      this.resultsStore.resetResults()
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style>
 #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
 }
 
 #otherData {
-    padding-top: 80px;
+  padding-top: 80px;
+  padding-bottom: 40px;
 }
 
-#algPicker {
-    -webkit-animation-duration: 2s;
-    animation-duration: 2s;
+.alg-card {
+  transition: box-shadow 0.2s, transform 0.15s;
 }
 
-//@media (min-width: 768px) {
+.alg-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.alg-card-active {
+  background-color: #f0faf5;
+}
+
 .table {
-    margin: auto;
-    width: 75% !important;
+  margin: auto;
+  width: 75% !important;
 }
-//}
 
 .dropdown-item.active,
 .dropdown-item:active {
-    color: #42B983;
-    font-weight: bold;
-    background-color: transparent;
-}
-
-.dropdown-toggle:after {
-    content: none;
+  color: #42B983;
+  font-weight: bold;
+  background-color: transparent;
 }
 
 .progress-bar {
-    background-color: #42B983;
+  background-color: #42B983;
 }
 
 .animated {
-    -webkit-animation-duration: 1s;
-    animation-duration: 1s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
 }
 
 @media (print), (prefers-reduced-motion: reduce) {
-    .animated {
-        -webkit-animation-duration: 1ms !important;
-        animation-duration: 1ms !important;
-        -webkit-transition-duration: 1ms !important;
-        transition-duration: 1ms !important;
-        -webkit-animation-iteration-count: 1 !important;
-        animation-iteration-count: 1 !important;
-    }
+  .animated {
+    -webkit-animation-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    -webkit-transition-duration: 1ms !important;
+    transition-duration: 1ms !important;
+    -webkit-animation-iteration-count: 1 !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 .animated.infinite {
-    -webkit-animation-iteration-count: infinite;
-    animation-iteration-count: infinite;
-}
-
-.animated.delay-1s {
-    -webkit-animation-delay: 1s;
-    animation-delay: 1s;
-}
-
-.animated.delay-2s {
-    -webkit-animation-delay: 2s;
-    animation-delay: 2s;
-}
-
-.animated.delay-3s {
-    -webkit-animation-delay: 3s;
-    animation-delay: 3s;
-}
-
-.animated.delay-4s {
-    -webkit-animation-delay: 4s;
-    animation-delay: 4s;
-}
-
-@-webkit-keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .fadeIn {
-    -webkit-animation-name: fadeIn;
-    animation-name: fadeIn;
-}
-
-@-webkit-keyframes pulse {
-    from {
-        -webkit-transform: scale3d(1, 1, 1);
-        transform: scale3d(1, 1, 1);
-    }
-
-    50% {
-        -webkit-transform: scale3d(1.05, 1.05, 1.05);
-        transform: scale3d(1.05, 1.05, 1.05);
-    }
-
-    to {
-        -webkit-transform: scale3d(1, 1, 1);
-        transform: scale3d(1, 1, 1);
-    }
+  -webkit-animation-name: fadeIn;
+  animation-name: fadeIn;
 }
 
 @keyframes pulse {
-    from {
-        -webkit-transform: scale3d(1, 1, 1);
-        transform: scale3d(1, 1, 1);
-    }
-
-    50% {
-        -webkit-transform: scale3d(1.05, 1.05, 1.05);
-        transform: scale3d(1.05, 1.05, 1.05);
-    }
-
-    to {
-        -webkit-transform: scale3d(1, 1, 1);
-        transform: scale3d(1, 1, 1);
-    }
+  from { transform: scale3d(1, 1, 1); }
+  50% { transform: scale3d(1.05, 1.05, 1.05); }
+  to { transform: scale3d(1, 1, 1); }
 }
 
 .pulse {
-    -webkit-animation-name: pulse;
-    animation-name: pulse;
+  -webkit-animation-name: pulse;
+  animation-name: pulse;
+}
+
+.animated.delay-2s {
+  -webkit-animation-delay: 2s;
+  animation-delay: 2s;
+}
+
+.animated.delay-4s {
+  -webkit-animation-delay: 4s;
+  animation-delay: 4s;
 }
 </style>
